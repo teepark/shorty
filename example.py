@@ -32,7 +32,7 @@ def cookies(http):
     http.add_header("content-type", "text/plain")
     print http.headers.keys()
     return "\n".join(
-            "%s: %s" % (k, v.value) for k, v in http.cookies.items())
+            "%s: %s" % (k, v.value) for k, v in http.COOKIES.items())
 
 @app.get("^/write_cookie/$")
 def write_cookie(http):
@@ -45,7 +45,7 @@ def write_cookie(http):
 
 @app.post("^/write_cookie/$")
 def write_cookie_post(http):
-    http.cookies[http.post['name']] = http.post['value']
+    http.COOKIES[http.POST['name']] = http.POST['value']
     http.redirect("/cookies/", 302)
 
 

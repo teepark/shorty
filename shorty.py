@@ -23,8 +23,8 @@ NOT_SUPPLIED = object()
 class HTTP(object):
     def __init__(self, environ):
         self.environ = environ
-        self.cookies = Cookie.SimpleCookie(environ.get('HTTP_COOKIE', ''))
-        self.path = environ['PATH_INFO']
+        self.COOKIES = Cookie.SimpleCookie(environ.get('HTTP_COOKIE', ''))
+        self.PATH = environ['PATH_INFO']
 
         self._out_headers = []
         self._out_code = 200
@@ -147,8 +147,8 @@ class App(object):
             message = itertools.chain([first_chunk], message)
 
         # is this really a good place for setting the Set-Cookie header?
-        if http.cookies:
-            http.add_header(*(http.cookies.output().split(": ", 1)))
+        if http.COOKIES:
+            http.add_header(*(http.COOKIES.output().split(": ", 1)))
 
         start_response(
                 "%d %s" % (status, RESPONSES[status][0]), http._out_headers)
