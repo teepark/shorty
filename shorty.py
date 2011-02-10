@@ -169,7 +169,7 @@ class App(object):
     def _gen_chunked(self, gen):
         for chunk in gen:
             yield '%x\r\n%s\r\n' % (len(chunk), chunk)
-        yield '0\r\n'
+        yield '0\r\n\r\n'
 
     def chunked(self, func):
         def inner(http, *args, **kwargs):

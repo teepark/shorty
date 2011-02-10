@@ -3,8 +3,10 @@
 
 import pprint
 
-from shorty import App
 from feather.wsgi import serve
+import greenhouse
+
+from shorty import App
 
 
 app = App()
@@ -47,6 +49,18 @@ def write_cookie(http):
 def write_cookie_post(http):
     http.COOKIES[http.POST['name']] = http.POST['value']
     http.redirect("/cookies/", 302)
+
+@app.get("^/chunked/$")
+@app.chunked
+def chunked_response(http):
+    http.add_header('content-type', 'text/html')
+    # browsers won't display data as it comes in until there is a certain
+    # minimal amount, so we prefix a bunch of junk to trigger that state early
+    yield (" " * 1000) + "\n<!doctype html>\n<html>\n\t<body>\n"
+    for i in xrange(10):
+        greenhouse.pause_for(1)
+        yield "\t\t<p>%d</p>\n" % i
+    yield "\t</body>\n</html>"
 
 
 if __name__ == '__main__':
