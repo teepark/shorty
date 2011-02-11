@@ -150,6 +150,11 @@ class App(object):
         if http.COOKIES:
             http.add_header(*(http.COOKIES.output().split(": ", 1)))
 
+        if (isinstance(message, str)
+                and not any(1 for x in http._out_headers
+                        if x[0].lower() == 'content-length')):
+            http.add_header('Content-Length', str(len(message)))
+
         start_response(
                 "%d %s" % (status, RESPONSES[status][0]), http._out_headers)
 
