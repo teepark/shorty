@@ -173,6 +173,9 @@ class App(object):
 
     def _gen_chunked(self, gen):
         for chunk in gen:
+            # skip empty chunks (http://code.djangoproject.com/ticket/3619)
+            if not chunk:
+                continue
             yield '%x\r\n%s\r\n' % (len(chunk), chunk)
         yield '0\r\n\r\n'
 
