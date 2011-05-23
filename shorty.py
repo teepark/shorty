@@ -173,7 +173,7 @@ class App(object):
 
     def _gen_chunked(self, gen):
         for chunk in gen:
-            # skip empty chunks (http://code.djangoproject.com/ticket/3619)
+            # skip empty chunks
             if not chunk:
                 continue
             yield '%x\r\n%s\r\n' % (len(chunk), chunk)
@@ -185,7 +185,7 @@ class App(object):
             if not hasattr(gen, '__iter__'):
                 return gen
 
-            http.add_header('transfer-encoding', 'chunked')
+            http.add_header('Transfer-Encoding', 'chunked')
             return self._gen_chunked(gen)
 
         return inner

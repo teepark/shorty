@@ -21,7 +21,7 @@ def hello(http):
 
 @app.get(r"^/hello/(\w+)/$")
 def hello_anyone(http, name):
-    # potential XSS hole
+    # potential XSS hole (though the regex should be strict enough)
     return "<h1>Hello, %s</h1>" % name
 
 @app.get("^/headers/$")
@@ -32,7 +32,6 @@ def headers(http):
 @app.get("^/cookies/$")
 def cookies(http):
     http.add_header("content-type", "text/plain")
-    print http.headers.keys()
     return "\n".join(
             "%s: %s" % (k, v.value) for k, v in http.COOKIES.items())
 
@@ -48,15 +47,38 @@ def write_cookie(http):
 @app.post("^/write_cookie/$")
 def write_cookie_post(http):
     http.COOKIES[http.POST['name']] = http.POST['value']
+    http.COOKIES[http.POST['name']]['path'] = '/'
     http.redirect("/cookies/", 302)
 
 @app.get("^/chunked/$")
 @app.chunked
 def chunked_response(http):
     http.add_header('content-type', 'text/html')
-    # browsers won't display data as it comes in until there is a certain
-    # minimal amount, so we prefix a bunch of junk to trigger that state early
-    yield (" " * 1000) + "\n<!doctype html>\n<html>\n\t<body>\n"
+    yield """<!--
+browsers won't actually display data as it comes in until there is a certain
+minimal amount already received, so this prefix is just to send something to
+push the browser over that limit so that the stuff we care about will be
+rendered immediately.
+
+nope, the previous paragraph wasn't enough (for chrome at least). so, what's
+new with you? *sigh*, this forced conversation just feels so awkward.
+
+it's ok, we ALREADY have around 40% of the padding we need! I think I'll take
+the rest of our time together to berate browsers for this behavior.
+
+"Transfer-Encoding: chunked" has obvious intention, and paricularly obvious
+implications for pieces that are going to be displayed on the screen. It's a
+clear statement that things might take a while so why don't you just go ahead
+and display what you receive as you receive it. It's a perfectly reasonable
+means of getting HTTP server-push that is hampered by this browser behavior,
+and for the life of me I can't figure out why it would be a good idea.
+
+glad I got that off my chest.
+-->
+<!DOCTYPE html>
+<html>
+\t<body>
+"""
     for i in xrange(10):
         greenhouse.pause_for(1)
         yield "\t\t<p>%d</p>\n" % i
