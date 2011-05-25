@@ -30,7 +30,8 @@ class HTTP(object):
         self._out_code = 200
 
         if "feather.headers" in environ:
-            headerlist = environ['feather.headers'][:]
+            headerlist = [
+                    (k, v.lstrip(' ')) for k, v in environ['feather.headers']]
         else:
             headerlist = [
                     (k[5:].replace('_', '-'), v.lstrip(' '))
