@@ -29,14 +29,10 @@ class HTTP(object):
         self._out_headers = []
         self._out_code = 200
 
-        if "feather.headers" in environ:
-            headerlist = [
-                    (k, v.lstrip(' ')) for k, v in environ['feather.headers']]
-        else:
-            headerlist = [
-                    (k[5:].replace('_', '-'), v.lstrip(' '))
-                    for k, v in environ.iteritems()
-                    if k.startswith("HTTP_")]
+        headerlist = [
+                (k[5:].replace('_', '-'), v.lstrip(' '))
+                for k, v in environ.iteritems()
+                if k.startswith("HTTP_")]
         self.headers = multipart.MultiDict(headerlist)
 
         get_params = cgi.parse_qsl(
