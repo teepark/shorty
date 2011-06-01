@@ -6,6 +6,7 @@ import email.feedparser
 import functools
 import itertools
 import re
+import urlparse
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -77,6 +78,39 @@ class HTTP(object):
             self.POST = multipart.MultiDict(
                     cgi.parse_qsl(data.getvalue(), keep_blank_values=True))
 
+    @property
+    def url(self):
+        query = ""
+        if self.environ.get('QUERY_STRING'):
+            query = "?" + self.environ['QUERY_STRING']
+
+        return (urllib.quote(self.environ['SCRIPT_NAME'] +
+                    self.environ['PATH_INFO']) +
+                query)
+
+    @property
+    def absolute_url(self):
+        scheme = self.environ['wsgi.url_scheme']
+
+        if 'HOST' in self.headers:
+            host = self.headers['HOST'][0]
+        else:
+            host = self.environ['SERVER_NAME']
+            port = self.environ['SERVER_PORT']
+            if (host, port) not in [('http', '80'), ('https', '443')]:
+                host = '%s:%s' % (host, port)
+
+        query = ""
+        if self.environ.get('QUERY_STRING'):
+            query = "?" + self.environ['QUERY_STRING']
+
+        return urlparse.urlunsplit((
+            scheme,
+            host,
+            urllib.quote(self.environ['SCRIPT_NAME'] +
+                    self.environ['PATH_INFO']),
+            query,
+            ""))
 
     def add_header(self, key, value):
         self._out_headers.append((key, value))
