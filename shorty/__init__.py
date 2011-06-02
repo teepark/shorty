@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import BaseHTTPServer
 import cgi
 import collections
@@ -12,7 +14,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-import multipart
+from . import multipart
 
 
 __all__ = ["App", "Error"]
@@ -80,13 +82,14 @@ class HTTP(object):
 
     @property
     def url(self):
+        path = urllib.quote(self.environ['SCRIPT_NAME'] +
+                self.environ['PATH_INFO'])
+
         query = ""
         if self.environ.get('QUERY_STRING'):
             query = "?" + self.environ['QUERY_STRING']
 
-        return (urllib.quote(self.environ['SCRIPT_NAME'] +
-                    self.environ['PATH_INFO']) +
-                query)
+        return path + query
 
     @property
     def absolute_url(self):
@@ -100,17 +103,7 @@ class HTTP(object):
             if (host, port) not in [('http', '80'), ('https', '443')]:
                 host = '%s:%s' % (host, port)
 
-        query = ""
-        if self.environ.get('QUERY_STRING'):
-            query = "?" + self.environ['QUERY_STRING']
-
-        return urlparse.urlunsplit((
-            scheme,
-            host,
-            urllib.quote(self.environ['SCRIPT_NAME'] +
-                    self.environ['PATH_INFO']),
-            query,
-            ""))
+        return "%s://%s%s" % (scheme, host, self.url)
 
     def add_header(self, key, value):
         self._out_headers.append((key, value))
@@ -146,14 +139,15 @@ class _MethodDescriptor(object):
 
 
 class App(object):
-    def __init__(self):
-        self.handlers = collections.defaultdict(list)
 
     get = _MethodDescriptor("GET")
     post = _MethodDescriptor("POST")
     head = _MethodDescriptor("HEAD")
     put = _MethodDescriptor("PUT")
     delete = _MethodDescriptor("DELETE")
+
+    def __init__(self):
+        self.handlers = collections.defaultdict(list)
 
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
