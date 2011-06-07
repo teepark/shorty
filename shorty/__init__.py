@@ -26,7 +26,7 @@ NOT_SUPPLIED = object()
 class HTTP(object):
     def __init__(self, environ):
         self.environ = environ
-        self.COOKIES = Cookie.SimpleCookie(environ.get('HTTP_COOKIE', ''))
+        self.COOKIES = ChangeDetectingCookie(environ.get('HTTP_COOKIE', ''))
         self.PATH = environ['PATH_INFO']
 
         self._out_headers = []
@@ -171,9 +171,8 @@ class App(object):
                 break
             message = itertools.chain([first_chunk], message)
 
-        # is this really a good place for setting the Set-Cookie header?
-        if http.COOKIES:
-            http.add_header(*(http.COOKIES.output().split(": ", 1)))
+        for value in http.COOKIES.updated():
+            http.add_header('Set-Cookie', str(value.output(header='')))
 
         if (isinstance(message, str)
                 and not any(1 for x in http._out_headers
@@ -221,3 +220,25 @@ class Error(Exception):
         super(Error, self).__init__(status, message)
         self.status = status
         self.message = message
+
+
+class ChangeDetectingCookie(Cookie.SimpleCookie):
+    def __init__(self, *args, **kwargs):
+        super(ChangeDetectingCookie, self).__init__(*args, **kwargs)
+        self._stamps = dict((k, self.hash_morsel(m)) for k, m in self.items())
+
+    def updated(self):
+        for key, morsel in self.iteritems():
+            if self.hash_morsel(morsel) != self._stamps.get(key):
+                yield morsel
+
+        for key, stamp in self._stamps.iteritems():
+            if key not in self:
+                morsel = Cookie.Morsel()
+                morsel.set(key, "", "")
+                morsel['expires'] = morsel['max-age'] = 0
+                yield morsel
+
+    @staticmethod
+    def hash_morsel(morsel):
+        return hash((morsel.coded_value,) + tuple(dict(morsel).items()))
