@@ -111,7 +111,7 @@ class HTTP(object):
     def set_code(self, code):
         self._out_code = code
 
-    def redirect(self, location, code=301):
+    def redirect(self, location, code=302):
         self.add_header("Location", location)
         raise Error(code, '')
 

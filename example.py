@@ -48,7 +48,16 @@ def write_cookie(http):
 def write_cookie_post(http):
     http.COOKIES[http.POST['name']] = http.POST['value']
     http.COOKIES[http.POST['name']]['path'] = '/'
-    http.redirect("/cookies/", 302)
+    http.redirect("/cookies/")
+
+@app.get("^/del_cookies/$")
+def del_cookies(http):
+    for key in http.COOKIES:
+        http.COOKIES[key] = ""
+        morsel = http.COOKIES[key]
+        morsel['max-age'] = morsel['expires'] = 0
+        morsel['path'] = '/'
+    http.redirect("/cookies/")
 
 @app.get("^/chunked/$")
 @app.chunked
