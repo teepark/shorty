@@ -74,9 +74,14 @@ class HTTP(object):
                 'application/x-url-encoded'):
             data = StringIO()
             chunk = environ['wsgi.input'].read(8192)
+            total = len(chunk)
             while chunk:
                 data.write(chunk)
                 chunk = environ['wsgi.input'].read(8192)
+                total += len(chunk)
+            if total < content_length:
+                # if we got an incomplete body, don't provide *any* body
+                return
             self.POST = multipart.MultiDict(
                     cgi.parse_qsl(data.getvalue(), keep_blank_values=True))
 
