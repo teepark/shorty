@@ -227,23 +227,25 @@ class Error(Exception):
         self.message = message
 
 
+def _hash_morsel(morsel):
+    return hash((morsel.coded_value,) + tuple(dict(morsel).items()))
+
 class ChangeDetectingCookie(Cookie.SimpleCookie):
     def __init__(self, *args, **kwargs):
         super(ChangeDetectingCookie, self).__init__(*args, **kwargs)
-        self._stamps = dict((k, self.hash_morsel(m)) for k, m in self.items())
+        self._stamps = dict((k, _hash_morsel(m)) for k, m in self.items())
 
-    def updated(self):
+    def updated(self, deleted=True):
+        # yield all the morsels added or updated
         for key, morsel in self.iteritems():
-            if self.hash_morsel(morsel) != self._stamps.get(key):
+            if _hash_morsel(morsel) != self._stamps.get(key):
                 yield morsel
 
-        for key, stamp in self._stamps.iteritems():
-            if key not in self:
-                morsel = Cookie.Morsel()
-                morsel.set(key, "", "")
-                morsel['expires'] = morsel['max-age'] = 0
-                yield morsel
-
-    @staticmethod
-    def hash_morsel(morsel):
-        return hash((morsel.coded_value,) + tuple(dict(morsel).items()))
+        if deleted:
+            # yield timed-out morsels for all those deleted
+            for key, stamp in self._stamps.iteritems():
+                if key not in self:
+                    morsel = Cookie.Morsel()
+                    morsel.set(key, "", "")
+                    morsel['expires'] = morsel['max-age'] = 0
+                    yield morsel
