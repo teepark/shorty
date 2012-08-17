@@ -170,10 +170,13 @@ class App(object):
                 if message is None:
                     message = RESPONSES[status][1]
             except Exception:
-                status = 500
-                message = RESPONSES[status][1]
                 if self.handler_500 is not None:
+                    http.set_code(500)
                     message = self.handler_500(http, sys.exc_info())
+                    status = http._out_code
+                else:
+                    message = RESPONSES[status][1]
+                    status = 500
         else:
             status = 404
             message = RESPONSES[status][1]
