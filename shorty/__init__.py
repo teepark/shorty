@@ -153,6 +153,8 @@ class App(object):
 
     def __init__(self):
         self.handlers = collections.defaultdict(list)
+        self.handler_404 = None
+        self.handler_500 = None
 
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
@@ -166,9 +168,17 @@ class App(object):
                 message = err.message
                 if message is None:
                     message = RESPONSES[status][1]
+            except Exception:
+                status = 500
+                message = RESPONSES[status][1]
+                if self.handler_500 is not None:
+                    message = self.handler_500(http)
         else:
             status = 404
             message = RESPONSES[status][1]
+            if self.handler_404 is not None:
+                message = self.handler_404(http)
+
 
         # pull the first chunk so that a generator at least gets entered
         if hasattr(message, "__iter__"):
@@ -219,6 +229,11 @@ class App(object):
 
         return inner
 
+    def handle_500(self, func):
+        self.handler_500 = func
+
+    def handle_404(self, func):
+        self.handler_404 = func
 
 class Error(Exception):
     def __init__(self, status, message=None):
