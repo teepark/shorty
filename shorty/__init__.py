@@ -29,6 +29,7 @@ class HTTP(object):
         self.environ = environ
         self.COOKIES = ChangeDetectingCookie(environ.get('HTTP_COOKIE', ''))
         self.PATH = environ['PATH_INFO']
+        self.METHOD = environ['REQUEST_METHOD'].upper()
 
         self._out_headers = []
         self._out_code = 200
@@ -47,7 +48,7 @@ class HTTP(object):
         self.FILES = multipart.MultiDict()
         self.BODY = environ['wsgi.input']
 
-        if environ.get('REQUEST_METHOD', '').upper() not in ('POST', 'PUT'):
+        if environ['REQUEST_METHOD'].upper() not in ('POST', 'PUT'):
             return
 
         content_length = environ.get('CONTENT_LENGTH', '')
@@ -200,8 +201,15 @@ class App(object):
         start_response(
                 "%d %s" % (status, RESPONSES[status][0]), http._out_headers)
 
+        # never send a body on HEAD requests.
+        # do it this late so that the Content-Length header
+        # still reflects what the length *would have* been
+        if http.METHOD == 'HEAD':
+            message = ''
+
         if not hasattr(message, "__iter__"):
             message = [message]
+
         return message
 
     def _resolve(self, environ):
