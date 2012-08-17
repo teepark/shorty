@@ -8,6 +8,7 @@ import email.feedparser
 import functools
 import itertools
 import re
+import sys
 import urlparse
 try:
     from cStringIO import StringIO
@@ -172,13 +173,12 @@ class App(object):
                 status = 500
                 message = RESPONSES[status][1]
                 if self.handler_500 is not None:
-                    message = self.handler_500(http)
+                    message = self.handler_500(http, sys.exc_info())
         else:
             status = 404
             message = RESPONSES[status][1]
             if self.handler_404 is not None:
                 message = self.handler_404(http)
-
 
         # pull the first chunk so that a generator at least gets entered
         if hasattr(message, "__iter__"):
