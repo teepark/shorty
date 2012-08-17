@@ -2,6 +2,7 @@
 # vim: fileencoding=utf8:et:sta:ai:sw=4:ts=4:sts=4
 
 import pprint
+import traceback
 
 from feather.wsgi import serve
 import greenhouse
@@ -92,6 +93,16 @@ glad I got that off my chest.
         greenhouse.pause_for(1)
         yield "\t\t<p>%d</p>\n" % i
     yield "\t</body>\n</html>"
+
+@app.get("^/fail/$")
+def fail(http):
+    raise Exception("omg I broke")
+
+@app.handle_500
+def on_failure(http, triple):
+    http.add_header('content-type', 'text/plain')
+    return ("An Error Occurred:\n\n"
+            + ''.join(traceback.format_exception(*triple)))
 
 
 if __name__ == '__main__':
