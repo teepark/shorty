@@ -123,40 +123,29 @@ class HTTP(object):
         raise Error(code, '')
 
 
-class _MethodDescriptor(object):
-    def __init__(self, method):
-        self.method = method
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-
-        return functools.partial(self.HandlerWrapper, self.method, instance)
-
-    class HandlerWrapper(object):
-        def __init__(self, method, app, urlpath):
-            self.method = method
-            self.app = app
-            self.urlpath = urlpath
-
-        def __call__(self, handler):
-            self.app.handlers[self.method.upper()].append(
-                    (re.compile(self.urlpath), handler))
-            return handler
-
-
 class App(object):
-
-    get = _MethodDescriptor("GET")
-    post = _MethodDescriptor("POST")
-    head = _MethodDescriptor("HEAD")
-    put = _MethodDescriptor("PUT")
-    delete = _MethodDescriptor("DELETE")
-
     def __init__(self):
         self.handlers = collections.defaultdict(list)
         self.handler_404 = None
         self.handler_500 = None
+
+    def _add_handler(self, method, pattern):
+        def addme(func):
+            self.handlers[method].append((re.compile(pattern), func))
+            return func
+        return addme
+
+    def get(self, pattern): return self._add_handler("GET", pattern)
+    def post(self, pattern): return self._add_handler("POST", pattern)
+    def head(self, pattern): return self._add_handler("HEAD", pattern)
+    def put(self, pattern): return self._add_handler("PUT", pattern)
+    def delete(self, pattern): return self._add_handler("DELETE", pattern)
+
+    def handle_500(self, func):
+        self.handler_500 = func
+
+    def handle_404(self, func):
+        self.handler_404 = func
 
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
@@ -239,12 +228,6 @@ class App(object):
             return self._gen_chunked(gen)
 
         return inner
-
-    def handle_500(self, func):
-        self.handler_500 = func
-
-    def handle_404(self, func):
-        self.handler_404 = func
 
 class Error(Exception):
     def __init__(self, status, message=None):
