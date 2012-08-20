@@ -143,9 +143,11 @@ class App(object):
 
     def handle_500(self, func):
         self.handler_500 = func
+        return func
 
     def handle_404(self, func):
         self.handler_404 = func
+        return func
 
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
