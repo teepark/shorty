@@ -4,12 +4,9 @@ import BaseHTTPServer
 import cgi
 import collections
 import Cookie
-import email.feedparser
-import functools
 import itertools
 import re
 import sys
-import urlparse
 try:
     from cStringIO import StringIO
 except ImportError:
