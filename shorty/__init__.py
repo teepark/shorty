@@ -126,17 +126,17 @@ class App(object):
         self.handler_404 = None
         self.handler_500 = None
 
-    def _add_handler(self, method, pattern):
+    def add_handler(self, method, pattern):
         def addme(func):
             self.handlers[method].append((re.compile(pattern), func))
             return func
         return addme
 
-    def get(self, pattern): return self._add_handler("GET", pattern)
-    def post(self, pattern): return self._add_handler("POST", pattern)
-    def head(self, pattern): return self._add_handler("HEAD", pattern)
-    def put(self, pattern): return self._add_handler("PUT", pattern)
-    def delete(self, pattern): return self._add_handler("DELETE", pattern)
+    def get(self, pattern): return self.add_handler("GET", pattern)
+    def post(self, pattern): return self.add_handler("POST", pattern)
+    def head(self, pattern): return self.add_handler("HEAD", pattern)
+    def put(self, pattern): return self.add_handler("PUT", pattern)
+    def delete(self, pattern): return self.add_handler("DELETE", pattern)
 
     def handle_500(self, func):
         self.handler_500 = func
