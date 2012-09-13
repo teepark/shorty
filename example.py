@@ -84,6 +84,20 @@ def on_failure(http, triple):
     return ("An Error Occurred:\n\n"
             + ''.join(traceback.format_exception(*triple)))
 
+subapp = App()
+
+@app.get("^/subapp")
+def delegate_to_subapp(http):
+    return subapp
+
+@subapp.get("/$")
+def subapp_index(http):
+    return "index of the sub-app"
+
+@subapp.get("/hello/world/$")
+def subapp_helloworld(http):
+    return "<p>subapp says:</p><h2>Hello, World!</h2>"
+
 
 if __name__ == '__main__':
     serve(("localhost", 9090), app, worker_count=1, traceback_body=True)

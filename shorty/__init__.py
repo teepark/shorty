@@ -148,7 +148,12 @@ class App(object):
 
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
-        http = HTTP(environ)
+
+        if 'shorty.http' in environ:
+            http = environ['shorty.http']
+        else:
+            http = HTTP(environ)
+            environ['shorty.http'] = http
         if handler:
             try:
                 message = handler(http, *args, **kwargs)
@@ -171,6 +176,10 @@ class App(object):
             message = RESPONSES[status][1]
             if self.handler_404 is not None:
                 message = self.handler_404(http)
+
+        if isinstance(message, App):
+            environ['shorty.http'] = http
+            return message(environ, start_response)
 
         # pull the first chunk so that a generator at least gets entered
         if hasattr(message, "__iter__"):
@@ -204,9 +213,12 @@ class App(object):
         return message
 
     def _resolve(self, environ):
+        path = environ.get('shorty.remaining_path', environ['PATH_INFO'])
         for regex, handler in self.handlers[environ['REQUEST_METHOD'].upper()]:
-            match = regex.match(environ['PATH_INFO'])
+            match = regex.match(path)
             if match:
+                environ['shorty.remaining_path'] = \
+                        path[:match.start()] + path[match.end():]
                 kwargs = match.groupdict()
                 args = not kwargs and match.groups() or ()
                 return handler, args, kwargs
