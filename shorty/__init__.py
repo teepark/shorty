@@ -174,9 +174,12 @@ class App(object):
 
         # pull the first chunk so that a generator at least gets entered
         if hasattr(message, "__iter__"):
-            for first_chunk in message:
-                break
-            message = itertools.chain([first_chunk], message)
+            iterator = iter(message)
+            try:
+                prefix = [iterator.next()]
+            except StopIteration:
+                prefix = []
+            message = itertools.chain(prefix, iterator)
 
         for value in http.COOKIES.updated():
             http.add_header('Set-Cookie', str(value.output(header='')))
