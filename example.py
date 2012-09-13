@@ -64,31 +64,11 @@ def del_cookies(http):
 @app.chunked
 def chunked_response(http):
     http.add_header('content-type', 'text/html')
-    yield """<!--
-browsers won't actually display data as it comes in until there is a certain
-minimal amount already received, so this prefix is just to send something to
-push the browser over that limit so that the stuff we care about will be
-rendered immediately.
-
-nope, the previous paragraph wasn't enough (for chrome at least). so, what's
-new with you? *sigh*, this forced conversation just feels so awkward.
-
-it's ok, we ALREADY have around 40% of the padding we need! I think I'll take
-the rest of our time together to berate browsers for this behavior.
-
-"Transfer-Encoding: chunked" has obvious intention, and paricularly obvious
-implications for pieces that are going to be displayed on the screen. It's a
-clear statement that things might take a while so why don't you just go ahead
-and display what you receive as you receive it. It's a perfectly reasonable
-means of getting HTTP server-push that is hampered by this browser behavior,
-and for the life of me I can't figure out why it would be a good idea.
-
-glad I got that off my chest.
--->
-<!DOCTYPE html>
+    yield """<!DOCTYPE html>
 <html>
 \t<body>
-"""
+<!--%s--!>
+""" % (' ' * (1024 - 40))
     for i in xrange(10):
         greenhouse.pause_for(1)
         yield "\t\t<p>%d</p>\n" % i
