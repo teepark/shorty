@@ -239,7 +239,7 @@ class Error(Exception):
 
 
 def _hash_morsel(morsel):
-    return hash((morsel.coded_value,) + tuple(dict(morsel).items()))
+    return hash((morsel.coded_value,) + tuple(sorted(dict(morsel).items())))
 
 class ChangeDetectingCookie(Cookie.SimpleCookie):
     def __init__(self, *args, **kwargs):
