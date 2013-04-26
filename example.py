@@ -98,6 +98,18 @@ def subapp_index(http):
 def subapp_helloworld(http):
     return "<p>subapp says:</p><h2>Hello, World!</h2>"
 
+subsub = App()
+
+@subapp.get("/sub")
+def get_subsub(http):
+    return subsub
+
+@subsub.get("/$")
+def subsub_index(http):
+    return "subsub index page (you found me at %s)" % http.PATH
+
+subsub.get("/.*/$")(subsub_index)
+
 
 if __name__ == '__main__':
     serve(("localhost", 9090), app, worker_count=1, traceback_body=True)

@@ -18,7 +18,6 @@ from . import multipart
 __all__ = ["App", "Error"]
 
 RESPONSES = BaseHTTPServer.BaseHTTPRequestHandler.responses
-NOT_SUPPLIED = object()
 
 
 class HTTP(object):
@@ -86,14 +85,13 @@ class HTTP(object):
 
     @property
     def url(self):
-        path = urllib.quote(self.environ['SCRIPT_NAME'] +
-                self.environ['PATH_INFO'])
+        path = urllib.quote(self.environ['PATH_INFO'])
 
         query = ""
         if self.environ.get('QUERY_STRING'):
             query = "?" + self.environ['QUERY_STRING']
 
-        return path + query
+        return self.PATH + query
 
     @property
     def absolute_url(self):
@@ -202,8 +200,8 @@ class App(object):
                 "%d %s" % (status, RESPONSES[status][0]), http._out_headers)
 
         # never send a body on HEAD requests.
-        # do it this late so that the Content-Length header
-        # still reflects what the length *would have* been
+        # emptying the message this late so that the Content-Length
+        # header still reflects what the length *would have* been
         if http.METHOD == 'HEAD':
             message = ''
 
