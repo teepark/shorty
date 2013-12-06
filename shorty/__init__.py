@@ -59,7 +59,7 @@ class HTTP(object):
         charset = ctype_options.get('charset', 'utf8')
 
         if content_type == 'multipart/form-data':
-            bound = options.get('boundary', '')
+            bound = ctype_options.get('boundary', '')
             if not bound:
                 return
             parser = multipart.MultipartParser(environ['wsgi.input'], bound,
