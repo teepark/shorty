@@ -169,8 +169,8 @@ class App(object):
                     message = self.handler_500(http, sys.exc_info())
                     status = http._out_code
                 else:
-                    message = RESPONSES[status][1]
                     status = 500
+                    message = RESPONSES[status][1]
         else:
             status = 404
             message = RESPONSES[status][1]
