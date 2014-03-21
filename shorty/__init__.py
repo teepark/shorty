@@ -192,8 +192,8 @@ class App(object):
             http.add_header('Set-Cookie', str(value.output(header='')))
 
         if (isinstance(message, str)
-                and not any(1 for x in http._out_headers
-                        if x[0].lower() == 'content-length')):
+                and not any(k.lower() == 'content-length'
+                    for k, v in http._out_headers)):
             http.add_header('Content-Length', str(len(message)))
 
         start_response(
@@ -218,7 +218,7 @@ class App(object):
                 environ['shorty.remaining_path'] = \
                         path[:match.start()] + path[match.end():]
                 kwargs = match.groupdict()
-                args = not kwargs and match.groups() or ()
+                args = () if kwargs else match.groups()
                 return handler, args, kwargs
         return None, (), {}
 
