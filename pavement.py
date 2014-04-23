@@ -6,16 +6,16 @@ from paver.setuputils import setup
 VERSION = (0, 1, 0, "")
 
 setup(
-    name="shorty",
+    name="routing",
     description="",
-    packages=["shorty"],
+    packages=["routing"],
     version=".".join(filter(None, map(str, VERSION))),
     author="Travis Parker",
     author_email="travis.parker@gmail.com",
     url="http://github.com/teepark/shorty",
     license="BSD",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
@@ -40,7 +40,7 @@ def sdist():
 @task
 def clean():
     for p in map(path, (
-        'shorty.egg-info', 'dist', 'build', 'MANIFEST.in', 'docs/build')):
+        'routing.egg-info', 'dist', 'build', 'MANIFEST.in', 'docs/build')):
         if p.exists():
             if p.isdir():
                 p.rmtree()

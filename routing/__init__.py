@@ -149,11 +149,11 @@ class App(object):
     def __call__(self, environ, start_response):
         handler, args, kwargs = self._resolve(environ)
 
-        if 'shorty.http' in environ:
-            http = environ['shorty.http']
+        if 'routing.http' in environ:
+            http = environ['routing.http']
         else:
             http = HTTP(environ)
-            environ['shorty.http'] = http
+            environ['routing.http'] = http
         if handler:
             try:
                 message = handler(http, *args, **kwargs)
@@ -176,7 +176,7 @@ class App(object):
                 message = self.handler_404(http)
 
         if isinstance(message, App):
-            environ['shorty.http'] = http
+            environ['routing.http'] = http
             return message(environ, start_response)
 
         # pull the first chunk so that a generator at least gets entered
@@ -211,11 +211,11 @@ class App(object):
         return message
 
     def _resolve(self, environ):
-        path = environ.get('shorty.remaining_path', environ['PATH_INFO'])
+        path = environ.get('routing.remaining_path', environ['PATH_INFO'])
         for regex, handler in self.handlers[environ['REQUEST_METHOD'].upper()]:
             match = regex.match(path)
             if match:
-                environ['shorty.remaining_path'] = \
+                environ['routing.remaining_path'] = \
                         path[:match.start()] + path[match.end():]
                 kwargs = match.groupdict()
                 args = () if kwargs else match.groups()

@@ -7,7 +7,7 @@ import traceback
 from feather.wsgi import serve
 import greenhouse
 
-from shorty import App
+from routing import App
 
 
 app = App()
