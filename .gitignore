@@ -1,7 +1,7 @@
 *.pyc
 *.pyo
 .*.swp
-shorty.egg-info/*
+routing.egg-info/*
 MANIFEST.in
 build/*
 docs/build/*
